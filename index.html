@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>COVID-19 in Italia</title>
+
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="//stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script src="Scripts/Covita.js"></script>
+    <script src="Scripts/jquery.csv.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+    <link rel="stylesheet" href="Covita.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <form class="form-inline form-control-sm">
+                <div class="form-group">
+                    <label>Regione:</label>
+                    <select class="form-control form-control-sm ml-sm-1" id="region">
+                        <option value=""> - </option>
+                        <option>Abruzzo</option>
+                        <option>Basilicata</option>
+                        <option>P.A. Bolzano</option>
+                        <option>Calabria</option>
+                        <option>Campania</option>
+                        <option>Emilia-Romagna</option>
+                        <option>Friuli Venezia Giulia</option>
+                        <option>Lazio</option>
+                        <option>Liguria</option>
+                        <option>Lombardia</option>
+                        <option>Marche</option>
+                        <option>Molise</option>
+                        <option>Piemonte</option>
+                        <option>Puglia</option>
+                        <option>Sardegna</option>
+                        <option>Sicilia</option>
+                        <option>Toscana</option>
+                        <option>P.A. Trento</option>
+                        <option>Umbria</option>
+                        <option>Valle d'Aosta</option>
+                        <option>Veneto</option>
+                        <option>Milano</option>
+                    </select>
+                </div>
+                <div class="form-group ml-sm-2">
+                    <label>Provincia:</label>
+                    <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="province">
+                        <option value=""> - </option>
+                    </select>
+                </div>
+                <div class="form-group ml-sm-2">
+                    <label>Valori:</label>
+                    <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="values">
+                        <option value="total">Totali</option>
+                        <option value="daily">Giornalieri</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+</body>
+</html>
