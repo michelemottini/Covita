@@ -1,4 +1,10 @@
-﻿var G = {};
+﻿/*
+ * Copyright(c) 2020, Michele Mottini
+ * 
+ * This file is licensed under the MIT License - see License.txt
+*/
+
+var G = {};
 
 $(function () {
 	var chartColors = {
@@ -22,6 +28,8 @@ $(function () {
 		options: {
 			responsive: true,
 			title: {
+				fontSize: 18,
+				fontStyle: 'normal',
 				display: true
 			},
 			tooltips: {
@@ -43,6 +51,11 @@ $(function () {
 					display: true,
 					scaleLabel: {
 						display: false
+					},
+					ticks: {
+						callback: function (value) {
+							return Number(value).toLocaleString();
+						}
 					}
 				}]
 			},
@@ -130,16 +143,16 @@ $(function () {
 	var datasetDefinitions = [
 		{
 			column: "terapia_intensiva",
-			label: 'Intensivi',
+			label: 'Terapia intensiva',
 			color: chartColors.purple
 		},
 		{
 			column: "totale_ospedalizzati",
-			label: 'Ricoverati',
+			label: 'Ospedalizzati',
 			color: chartColors.red
 		}, {
 			column: "isolamento_domiciliare",
-			label: 'Isolamento',
+			label: 'Isolamento domiciliare',
 			color: chartColors.blue
 		}, {
 			column: "totale_positivi",
@@ -160,7 +173,8 @@ $(function () {
 		}, {
 			column: "tamponi",
 			label: 'Tamponi',
-			color: chartColors
+			color: chartColors,
+			hidden: true
 		}];
 
 	function createChart(path, delta, filter) {
@@ -219,6 +233,7 @@ $(function () {
 						label: datasetDefinition.label,
 						backgroundColor: datasetDefinition.color,
 						borderColor: datasetDefinition.color,
+						hidden: datasetDefinition.hidden || false,
 						data: [],
 						index: columnIndexThrows(columns, datasetDefinition.column)
 					}

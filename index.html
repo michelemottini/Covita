@@ -1,5 +1,11 @@
 ﻿<!DOCTYPE html>
 
+<!--
+ * Copyright (c) 2020, Michele Mottini
+ *
+ * This file is licensed under the MIT License - see License.txt
+-->
+
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
@@ -24,11 +30,22 @@
 <body>
     <div class="container">
         <div class="row">
+            <h1>Visualizzazione dati epidemia COVID-19</h1>
+            <p class="lead">
+                Visualizza i <a href="https://github.com/pcm-dpc/COVID-19" target="_blank">dati</a> pubblicati giornalmente dalla Protezione civile: nazionali, per regione o provinciali.
+            </p>
+            <p>
+                Per le singole province è disponibile solo il numero totale di casi.
+                Per tutti i dati è possibile visualizzare i valori totali o gli aumenti (diminuzioni) giornalieri, calcolati sottraendo dal totale del giorno il totale del giorno prima.
+                Ogni dato può essere nascosto / visualizzato clickando sull'etichetta qui sotto.
+            </p>
+        </div>
+        <div class="row">
             <form class="form-inline form-control-sm">
                 <div class="form-group">
                     <label>Regione:</label>
                     <select class="form-control form-control-sm ml-sm-1" id="region">
-                        <option value=""> - </option>
+                        <option value="">- Nazionali -</option>
                         <option>Abruzzo</option>
                         <option>Basilicata</option>
                         <option>P.A. Bolzano</option>
@@ -68,8 +85,16 @@
                 </div>
             </form>
         </div>
-        <div class="row">
+        <div class="row mt-sm-3">
             <canvas id="canvas"></canvas>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="container">
+            <p class="text-muted">
+                By Michele Mottini, using <a href="https://www.chartjs.org/" target="_blank">Chart.js</a> and <a href="https://github.com/typeiii/jquery-csv" target="_blank">jQuery-csv</a>.
+                Source code available on <a href="https://github.com/michelemottini/Covita" target="_blank">GitHub</a> under the MIT license
+            </p>
         </div>
     </div>
 </body>
