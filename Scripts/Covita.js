@@ -76,7 +76,7 @@ $(function () {
 	function refresh() {
 		var region = $("#region").children("option:selected").val();
 		var province = $("#province").children("option:selected").val();
-		var delta = $("#values").children("option:selected").val() === "daily";
+		var delta = parseInt($("#values").children("option:selected").val());
 		if (!region) {
 			initProvince(null);
 			createChart("dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv", delta, null);
@@ -199,7 +199,7 @@ $(function () {
 
 			var labels = [];
 			var datasets = createDataSets(columns, onlyTotal ? totalColumn : null);
-			var previousLine = null;
+			var previousLines = [];
 			for (var i = 1; i < result.length; i++) {
 				var line = result[i];
 				if (!filter || line[filterColumnIndex] === filter) {
@@ -208,15 +208,22 @@ $(function () {
 					for (var j = 0; j < datasets.length; j++) {
 						var dataset = datasets[j];
 						var value = line[dataset.index];
-						if (delta && previousLine) {
-							value -= previousLine[dataset.index];
+						if (delta > 0) {
+							var total = 0;
+							var previousCount = previousLines.length;
+							for (var k = 1; k <= delta; k++) {
+								var previousValue = previousCount - k >= 0 ? previousLines[previousCount - k][dataset.index] : value;
+								total += (value - previousValue);
+								value = previousValue;
+							}
+							value = total / delta;
 						}
 						dataset.data.push(value);
 					}
-					previousLine = line;
+					previousLines.push(line);
 				}
 			}
-			chartConfig.options.title.text = (filter || "Italia") + (delta ? " - giornalieri" : " - totali");
+			chartConfig.options.title.text = (filter || "Italia") + (delta > 0 ? " - giornalieri (" + delta + ")" : " - totali");
 			chartConfig.data.labels = labels;
 			chartConfig.data.datasets = datasets;
 			chart.update();
