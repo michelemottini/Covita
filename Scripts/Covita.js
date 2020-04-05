@@ -83,6 +83,7 @@ $(function () {
 		} else {
 			if (region !== previousRegion) {
 				initProvince(regionProvinces[region]);
+				province = null;
 			}
 			if (province) {
 				createChart("dati-province/dpc-covid19-ita-province.csv", delta, province);
