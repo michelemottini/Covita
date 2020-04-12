@@ -35,8 +35,9 @@
                 Visualizza i <a href="https://github.com/pcm-dpc/COVID-19" target="_blank">dati</a> pubblicati giornalmente dalla Protezione civile: nazionali, per regione o provinciali.
             </p>
             <p>
-                Per le singole province è disponibile solo il numero totale di casi.
-                Per tutti i dati è possibile visualizzare i valori totali o gli aumenti (diminuzioni) giornalieri, calcolati sottraendo dal totale del giorno il totale del giorno prima.
+                Per le singole province è disponibile solo il numero totale assoluto di casi.
+                Per tutti i dati è possibile visualizzare i valori totali o gli aumenti (diminuzioni) giornalieri, calcolati sottraendo dal totale del giorno il totale del giorno prima, e sia i valori assoluti che per 100,000 abitanti.
+                È anche possible confrontare ogni singolo dato tra tutte le regioni nello stasso grafico selezionando 'Tutte'.
                 Ogni dato può essere nascosto / visualizzato clickando sull'etichetta qui sotto.
             </p>
         </div>
@@ -44,42 +45,23 @@
             <form class="form-inline form-control-sm">
                 <div class="form-group">
                     <label>Regione:</label>
-                    <select class="form-control form-control-sm ml-sm-1" id="region">
-                        <option value="">- Nazionali -</option>
-                        <option>Abruzzo</option>
-                        <option>Basilicata</option>
-                        <option>P.A. Bolzano</option>
-                        <option>Calabria</option>
-                        <option>Campania</option>
-                        <option>Emilia-Romagna</option>
-                        <option>Friuli Venezia Giulia</option>
-                        <option>Lazio</option>
-                        <option>Liguria</option>
-                        <option>Lombardia</option>
-                        <option>Marche</option>
-                        <option>Molise</option>
-                        <option>Piemonte</option>
-                        <option>Puglia</option>
-                        <option>Sardegna</option>
-                        <option>Sicilia</option>
-                        <option>Toscana</option>
-                        <option>P.A. Trento</option>
-                        <option>Umbria</option>
-                        <option>Valle d'Aosta</option>
-                        <option>Veneto</option>
-                    </select>
+                    <select class="form-control form-control-sm ml-sm-1" id="region"></select>
                 </div>
                 <div class="form-group ml-sm-2">
-                    <label>Provincia:</label>
-                    <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="province">
-                        <option value=""> - </option>
-                    </select>
+                    <label id="province-label">Provincia:</label>
+                    <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="province"></select>
                 </div>
                 <div class="form-group ml-sm-2">
                     <label>Valori:</label>
                     <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="values">
                         <option value="total">Totali</option>
                         <option value="daily">Giornalieri</option>
+                    </select>
+                </div>
+                <div class="form-group ml-sm-2">
+                    <select class="form-control form-control-sm ml-sm-1 drop-down-width" id="method">
+                        <option value="absolute">Assoluti</option>
+                        <option value="per100k">Per 100.000 abitanti</option>
                     </select>
                 </div>
             </form>

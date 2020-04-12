@@ -4,9 +4,115 @@
  * This file is licensed under the MIT License - see License.txt
 */
 
-var G = {};
-
 $(function () {
+	var regionDescriptions = {
+		"Abruzzo": {
+			provinces: ["Chieti", "L'Aquila", "Pescara", "Teramo"],
+			color: "#204051",
+			population: 1311580
+		},
+		"Basilicata": {
+			provinces: ["Matera", "Potenza"],
+			color: "#AEEFEC",
+			population: 562869
+		},
+		"P.A. Bolzano": {
+			provinces: ["Bolzano"],
+			color: "#FF5733",
+			population: 533050
+		},
+		"Calabria": {
+			provinces: ["Catanzaro", "Cosenza", "Crotone", "Reggio di Calabria", "Vibo Valentia"],
+			color: "#2B080C",
+			population: 1947131
+		},
+		"Campania": {
+			provinces: ["Avellino", "Benevento", "Caserta", "Napoli", "Salerno"],
+			color: "#005082",
+			population: 5801692
+		},
+		"Emilia-Romagna": {
+			provinces: ["Bologna", "Ferrara", "Forlì-Cesena", "Modena", "Parma", "Piacenza", "Ravenna", "Reggio nell'Emilia", "Rimini"],
+			color: "#DBB9C3",
+			population: 4459477
+		},
+		"Friuli Venezia Giulia": {
+			provinces: ["Gorizia", "Pordenone", "Trieste", "Udine"],
+			color: "#511845",
+			population: 1215220
+		},
+		"Lazio": {
+			provinces: ["Frosinone", "Latina", "Rieti", "Roma", "Viterbo"],
+			color: "#3B6978",
+			population: 5879082
+		},
+		"Liguria": {
+			provinces: ["Genova", "Imperia", "La Spezia", "Savona"],
+			color: "#F2ED6F",
+			population: 1550640
+		},
+		"Lombardia": {
+			provinces: ["Bergamo", "Brescia", "Como", "Cremona", "Lecco", "Lodi", "Mantova", "Milano", "Monza e della Brianza", "Pavia", "Sondrio", "Varese"],
+			color: "#EA6227",
+			population: 10060574
+		},
+		"Marche": {
+			provinces: ["Ancona", "Ascoli Piceno", "Fermo", "Macerata", "Pesaro e Urbino"],
+			color: "#4D4C79",
+			population: 1525271
+		},
+		"Molise": {
+			provinces: ["Campobasso", "Isernia"],
+			color: "#2B585C",
+			population: 305617
+		},
+		"Piemonte": {
+			provinces: ["Alessandria", "Asti", "Biella", "Cuneo", "Novara", "Torino", "Verbano-Cusio-Ossola", "Vercelli"],
+			color: "#F2A51A",
+			population: 4356406
+		},
+		"Puglia": {
+			provinces: ["Bari", "Barletta-Andria-Trani", "Brindisi", "Foggia", "Lecce", "Taranto"],
+			color: "#9DC6A7",
+			population: 4029053
+		},
+		"Sardegna": {
+			provinces: ["Cagliari", "Nuoro", "Oristano", "Sassari", "Sud Sardegna"],
+			color: "#DBEBB5",
+			population: 1639591
+		},
+		"Sicilia": {
+			provinces: ["Agrigento", "Caltanissetta", "Catania", "Enna", "Messina", "Palermo", "Ragusa", "Siracusa", "Trapani"],
+			color: "#639A67",
+			population: 4999891
+		},
+		"Toscana": {
+			provinces: ["Arezzo", "Firenze", "Grosseto", "Livorno", "Lucca", "Massa Carrara", "Pisa", "Pistoia", "Prato", "Siena"],
+			color: "#827397",
+			population: 3729641
+		},
+		"P.A. Trento": {
+			provinces: ["Trento"],
+			color: "#C70039",
+			population: 541098
+		},
+		"Umbria": {
+			provinces: ["Perugia", "Terni"],
+			color: "#363062",
+			population: 882015
+		},
+		"Valle d'Aosta": {
+			provinces: ["Aosta"],
+			color: "#F4E04D",
+			population: 125666
+		},
+		"Veneto": {
+			provinces: ["Belluno", "Padova", "Rovigo", "Treviso", "Venezia", "Verona", "Vicenza"],
+			color: "#900C3F",
+			population: 4905854
+		}
+	};
+
 	var chartColors = {
 		red: 'rgb(255, 99, 132)',
 		orange: 'rgb(255, 159, 64)',
@@ -73,22 +179,32 @@ $(function () {
 
 	var previousRegion = null;
 
+	initRegions();
+	initProvince(null);
+
 	function refresh() {
 		var region = $("#region").children("option:selected").val();
-		var province = $("#province").children("option:selected").val();
+		var provinceOrColumn = $("#province").children("option:selected").val();
 		var delta = $("#values").children("option:selected").val() === "daily";
+		var per100k = $("#method").children("option:selected").val() === "per100k";
 		if (!region) {
 			initProvince(null);
-			createChart("dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv", delta, null);
+			createChart("dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv", delta, per100k, null);
+		} else if (region === "all") {
+			if (region !== previousRegion) {
+				initColumns();
+				provinceOrColumn = totalColumn;
+			}
+			createComparisonChart(provinceOrColumn, delta, per100k);
 		} else {
 			if (region !== previousRegion) {
-				initProvince(regionProvinces[region]);
-				province = null;
+				initProvince(regionDescriptions[region].provinces);
+				provinceOrColumn = null;
 			}
-			if (province) {
-				createChart("dati-province/dpc-covid19-ita-province.csv", delta, province);
+			if (provinceOrColumn) {
+				createChart("dati-province/dpc-covid19-ita-province.csv", delta, false, provinceOrColumn);
 			} else {
-				createChart("dati-regioni/dpc-covid19-ita-regioni.csv", delta, region);
+				createChart("dati-regioni/dpc-covid19-ita-regioni.csv", delta, per100k, region);
 			}
 		}
 		previousRegion = region;
@@ -99,42 +215,43 @@ $(function () {
 	$("#region").change(refresh);
 	$("#province").change(refresh);
 	$("#values").change(refresh);
+	$("#method").change(refresh);
 
 	function initProvince(provinces) {
+		$("#province-label").text("Provincia:");
 		var $province = $("#province");
 		$province.empty();
 		$province.append($('<option></option>').val("").text(" - "));
 		if (provinces) {
 			for (var i = 0; i < provinces.length; i++) {
-				$("#province").append($('<option></option>').text(provinces[i]));
+				$province.append($('<option></option>').text(provinces[i]));
 			}
 		}
 		$province.val("");
 	}
 
-	var regionProvinces = {
-		"Abruzzo": ["Chieti", "L'Aquila", "Pescara", "Teramo"],
-		"Basilicata": ["Matera", "Potenza"],
-		"P.A. Bolzano": ["Bolzano"],
-		"Calabria": ["Catanzaro", "Cosenza", "Crotone", "Reggio di Calabria", "Vibo Valentia"],
-		"Campania": ["Avellino", "Benevento", "Caserta", "Napoli", "Salerno"],
-		"Emilia-Romagna": ["Bologna", "Ferrara", "Forlì-Cesena", "Modena", "Parma", "Piacenza", "Ravenna", "Reggio nell'Emilia", "Rimini"],
-		"Friuli Venezia Giulia": ["Gorizia", "Pordenone", "Trieste", "Udine"],
-		"Lazio": ["Frosinone", "Latina", "Rieti", "Roma", "Viterbo"],
-		"Liguria": ["Genova", "Imperia", "La Spezia", "Savona"],
-		"Lombardia": ["Bergamo", "Brescia", "Como", "Cremona", "Lecco", "Lodi", "Mantova", "Milano", "Monza e della Brianza", "Pavia", "Sondrio", "Varese"],
-		"Marche": ["Ancona", "Ascoli Piceno", "Fermo", "Macerata", "Pesaro e Urbino"],
-		"Molise": ["Campobasso", "Isernia"],
-		"Piemonte": ["Alessandria", "Asti", "Biella", "Cuneo", "Novara", "Torino", "Verbano-Cusio-Ossola", "Vercelli"],
-		"Puglia": ["Bari", "Barletta-Andria-Trani", "Brindisi", "Foggia", "Lecce", "Taranto"],
-		"Sardegna": ["Cagliari", "Nuoro", "Oristano", "Sassari", "Sud Sardegna"],
-		"Sicilia": ["Agrigento", "Caltanissetta", "Catania", "Enna", "Messina", "Palermo", "Ragusa", "Siracusa", "Trapani"],
-		"Toscana": ["Arezzo", "Firenze", "Grosseto", "Livorno", "Lucca", "Massa Carrara", "Pisa", "Pistoia", "Prato", "Siena"],
-		"P.A. Trento": ["Trento"],
-		"Umbria": ["Perugia", "Terni"],
-		"Valle d'Aosta": ["Aosta"],
-		"Veneto": ["Belluno", "Padova", "Rovigo", "Treviso", "Venezia", "Verona", "Vicenza"]
-	};
+	function initColumns() {
+		$("#province-label").text("Dato:");
+		var $province = $("#province");
+		$province.empty();
+		for (var i = 0; i < datasetDefinitions.length; i++) {
+			var datasetDefinition = datasetDefinitions[i];
+			$province.append($('<option></option>').val(datasetDefinition.column).text(datasetDefinition.label));
+		}
+		$province.val(totalColumn);
+	}
+
+	function initRegions() {
+		var $region = $("#region");
+		$region.empty();
+		$region.append($('<option></option>').val("").text("- Nazionali -"));
+		$region.append($('<option></option>').val("all").text("- Tutte -"));
+		var regions = Object.keys(regionDescriptions);
+		for (var i = 0; i < regions.length; i++) {
+			$region.append($('<option></option>').text(regions[i]));
+		}
+		$region.val("");
+	}
 
 	var dateColumn = "data";
 	var regionColumn = "denominazione_regione";
@@ -146,8 +263,7 @@ $(function () {
 			column: "terapia_intensiva",
 			label: 'Terapia intensiva',
 			color: chartColors.purple
-		},
-		{
+		}, {
 			column: "totale_ospedalizzati",
 			label: 'Ospedalizzati',
 			color: chartColors.red
@@ -176,9 +292,10 @@ $(function () {
 			label: 'Tamponi',
 			color: chartColors,
 			hidden: true
-		}];
+		}
+	];
 
-	function createChart(path, delta, filter) {
+	function createChart(path, delta, per100k, filter) {
 		$.get("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/" + path, function (data) {
 			var result = $.csv.toArrays(data);
 
@@ -198,26 +315,42 @@ $(function () {
 				}
 			}
 
+			var population100k = 1;
+			if (per100k) {
+				if (filter) {
+					population100k = regionDescriptions[filter].population;
+				} else {
+					population100k = 0;
+					var regions = Object.keys(regionDescriptions);
+					for (var k = 0; k < regions.length; k++) {
+						population100k += regionDescriptions[regions[k]].population;
+					}
+				}
+				population100k /= 100000;
+			}
+
 			var labels = [];
 			var datasets = createDataSets(columns, onlyTotal ? totalColumn : null);
 			var previousLine = null;
 			for (var i = 1; i < result.length; i++) {
 				var line = result[i];
 				if (!filter || line[filterColumnIndex] === filter) {
-					var lineDate = line[dateColumnIndex];
-					labels.push(parseInt(lineDate.substr(8, 2)) + " " + months[parseInt(lineDate.substr(5, 2)) - 1]);
+					labels.push(createDateLabel(line[dateColumnIndex]));
 					for (var j = 0; j < datasets.length; j++) {
 						var dataset = datasets[j];
 						var value = line[dataset.index];
 						if (delta && previousLine) {
 							value -= previousLine[dataset.index];
 						}
+						if (per100k) {
+							value = Math.round(value / population100k);
+						}
 						dataset.data.push(value);
 					}
 					previousLine = line;
 				}
 			}
-			chartConfig.options.title.text = (filter || "Italia") + (delta ? " - giornalieri" : " - totali");
+			chartConfig.options.title.text = (filter || "Italia") + (delta ? " - giornalieri" : " - totali") + (per100k ? " per 100.000 abitanti" : " assoluti");
 			chartConfig.data.labels = labels;
 			chartConfig.data.datasets = datasets;
 			chart.update();
@@ -229,19 +362,77 @@ $(function () {
 		for (var i = 0; i < datasetDefinitions.length; i++) {
 			var datasetDefinition = datasetDefinitions[i];
 			if (!filter || datasetDefinition.column === filter) {
-				result.push(
-					{
-						label: datasetDefinition.label,
-						backgroundColor: datasetDefinition.color,
-						borderColor: datasetDefinition.color,
-						hidden: datasetDefinition.hidden || false,
-						data: [],
-						index: columnIndexThrows(columns, datasetDefinition.column)
-					}
-				);
+				result.push({
+					label: datasetDefinition.label,
+					backgroundColor: datasetDefinition.color,
+					borderColor: datasetDefinition.color,
+					hidden: datasetDefinition.hidden || false,
+					data: [],
+					index: columnIndexThrows(columns, datasetDefinition.column)
+				});
 			}
 		}
 		return result;
+	}
+
+	function createComparisonChart(column, delta, per100k) {
+		$.get("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv", function (data) {
+			var result = $.csv.toArrays(data);
+
+			var columns = result[0];
+			var dateColumnIndex = columnIndexThrows(columns, dateColumn);
+			var columnIndex = columnIndexThrows(columns, column);
+			var regionColumnIndex = columnIndexThrows(columns, regionColumn);
+
+			var labels = [];
+			var datasetIndexes = {};
+			var datasets = [];
+			var regions = Object.keys(regionDescriptions);
+			var previousLines = {};
+			for (var i = 0; i < regions.length; i++) {
+				var region = regions[i];
+				var regionColor = regionDescriptions[region].color;
+				datasetIndexes[region] = datasets.length;
+				datasets.push({
+					label:  region,
+					backgroundColor: regionColor,
+					borderColor: regionColor,
+					hidden: false,
+					data: []
+				});
+				previousLines[region] = null;
+			}
+			var previousDate = null;
+			for (i = 1; i < result.length; i++) {
+				var line = result[i];
+				var date = line[dateColumnIndex];
+				if (date !== previousDate) {
+					labels.push(createDateLabel(line[dateColumnIndex]));
+					previousDate = date;
+				}
+				region = line[regionColumnIndex];
+				var value = line[columnIndex];
+				var previousLine = previousLines[region];
+				if (delta && previousLine) {
+					value -= previousLine[columnIndex];
+				}
+				if (per100k) {
+					value = Math.round(value / regionDescriptions[region].population * 100000);
+				}
+				var dataset = datasets[datasetIndexes[region]];
+				dataset.data.push(value);
+				previousLines[region] = line;
+			}
+			for (i = 0; i < datasetDefinitions.length && datasetDefinitions[i].column !== column; i++);
+			chartConfig.options.title.text = datasetDefinitions[i].label + (delta ? " - giornalieri" : " - totali") + (per100k ? " per 100.000 abitanti" : " assoluti");
+			chartConfig.data.labels = labels;
+			chartConfig.data.datasets = datasets;
+			chart.update();
+		});
+	}
+
+	function createDateLabel(date) {
+		return parseInt(date.substr(8, 2)) + " " + months[parseInt(date.substr(5, 2)) - 1];
 	}
 
 	function columnIndexThrows(columns, column) {
