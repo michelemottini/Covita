@@ -181,30 +181,32 @@ $(function () {
 
 	initRegions();
 	initProvince(null);
+	initFrom();
 
 	function refresh() {
 		var region = $("#region").children("option:selected").val();
 		var provinceOrColumn = $("#province").children("option:selected").val();
 		var delta = $("#values").children("option:selected").val() === "daily";
 		var per100k = $("#method").children("option:selected").val() === "per100k";
+		var from = $("#from").children("option:selected").val();
 		if (!region) {
 			initProvince(null);
-			createChart("dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv", delta, per100k, null);
+			createChart("dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv", delta, per100k, null, from);
 		} else if (region === "all") {
 			if (region !== previousRegion) {
 				initColumns();
 				provinceOrColumn = totalColumn;
 			}
-			createComparisonChart(provinceOrColumn, delta, per100k);
+			createComparisonChart(provinceOrColumn, delta, per100k, from);
 		} else {
 			if (region !== previousRegion) {
 				initProvince(regionDescriptions[region].provinces);
 				provinceOrColumn = null;
 			}
 			if (provinceOrColumn) {
-				createChart("dati-province/dpc-covid19-ita-province.csv", delta, false, provinceOrColumn);
+				createChart("dati-province/dpc-covid19-ita-province.csv", delta, false, provinceOrColumn, from);
 			} else {
-				createChart("dati-regioni/dpc-covid19-ita-regioni.csv", delta, per100k, region);
+				createChart("dati-regioni/dpc-covid19-ita-regioni.csv", delta, per100k, region, from);
 			}
 		}
 		previousRegion = region;
@@ -216,6 +218,7 @@ $(function () {
 	$("#province").change(refresh);
 	$("#values").change(refresh);
 	$("#method").change(refresh);
+	$("#from").change(refresh);
 
 	function initProvince(provinces) {
 		$("#province-label").text("Provincia:");
@@ -253,10 +256,26 @@ $(function () {
 		$region.val("");
 	}
 
+	function initFrom(monthDates) {
+		var $from = $("#from");
+		var current = $from.val() || "";
+		$from.empty();
+		$from.append($('<option></option>').val("").text("- Inizio - "));
+		if (monthDates && monthDates.length) {
+			for (var i = 0; i < monthDates.length; i++) {
+				var monthDate = monthDates[i];
+				var month = months[parseInt(monthDate.substr(5, 2)) - 1];
+				$from.append($('<option></option>').val(monthDate).text(month));
+			}
+		}
+		$from.val(current);
+	}
+
 	var dateColumn = "data";
 	var regionColumn = "denominazione_regione";
 	var provinceColumn = "denominazione_provincia";
 	var totalColumn = "totale_casi";
+	var tamponiColumn = "tamponi";
 
 	var datasetDefinitions = [
 		{
@@ -289,18 +308,18 @@ $(function () {
 			color: chartColors.yellow
 		}, {
 			column: "tamponi",
-			label: 'Tamponi',
-			color: chartColors,
-			hidden: true
+			label: 'Tamponi/100',
+			color: chartColors
 		}
 	];
 
-	function createChart(path, delta, per100k, filter) {
+	function createChart(path, delta, per100k, filter, from) {
 		$.get("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/" + path, function (data) {
 			var result = $.csv.toArrays(data);
 
 			var columns = result[0];
 			var dateColumnIndex = columnIndexThrows(columns, dateColumn);
+			var tamponiColumnIndex = columnIndexThrows(columns, tamponiColumn);
 			var filterColumnIndex = null;
 			var onlyTotal = false;
 			if (filter) {
@@ -332,20 +351,35 @@ $(function () {
 			var labels = [];
 			var datasets = createDataSets(columns, onlyTotal ? totalColumn : null);
 			var previousLine = null;
+			var monthDates = [];
+			var lastMonthDate = null;
 			for (var i = 1; i < result.length; i++) {
 				var line = result[i];
+				var date = line[dateColumnIndex];
+
+				var monthDate = date.substr(0, 7);
+				if (!lastMonthDate || monthDate !== lastMonthDate) {
+					monthDates.push(monthDate);
+					lastMonthDate = monthDate;
+				}
+
 				if (!filter || line[filterColumnIndex] === filter) {
-					labels.push(createDateLabel(line[dateColumnIndex]));
-					for (var j = 0; j < datasets.length; j++) {
-						var dataset = datasets[j];
-						var value = line[dataset.index];
-						if (delta && previousLine) {
-							value -= previousLine[dataset.index];
+					if (!from || date >= from) {
+						labels.push(createDateLabel(date));
+						for (var j = 0; j < datasets.length; j++) {
+							var dataset = datasets[j];
+							var value = line[dataset.index];
+							if (delta && previousLine) {
+								value -= previousLine[dataset.index];
+							}
+							if (dataset.index === tamponiColumnIndex) {
+								value = Math.round(value / 100);
+							}
+							if (per100k) {
+								value = Math.round(value / population100k);
+							}
+							dataset.data.push(value);
 						}
-						if (per100k) {
-							value = Math.round(value / population100k);
-						}
-						dataset.data.push(value);
 					}
 					previousLine = line;
 				}
@@ -354,6 +388,7 @@ $(function () {
 			chartConfig.data.labels = labels;
 			chartConfig.data.datasets = datasets;
 			chart.update();
+			initFrom(monthDates);
 		});
 	}
 
@@ -366,7 +401,7 @@ $(function () {
 					label: datasetDefinition.label,
 					backgroundColor: datasetDefinition.color,
 					borderColor: datasetDefinition.color,
-					hidden: datasetDefinition.hidden || false,
+					hidden: false,
 					data: [],
 					index: columnIndexThrows(columns, datasetDefinition.column)
 				});
@@ -375,7 +410,7 @@ $(function () {
 		return result;
 	}
 
-	function createComparisonChart(column, delta, per100k) {
+	function createComparisonChart(column, delta, per100k, from) {
 		$.get("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv", function (data) {
 			var result = $.csv.toArrays(data);
 
@@ -405,22 +440,24 @@ $(function () {
 			var previousDate = null;
 			for (i = 1; i < result.length; i++) {
 				var line = result[i];
-				var date = line[dateColumnIndex];
-				if (date !== previousDate) {
-					labels.push(createDateLabel(line[dateColumnIndex]));
-					previousDate = date;
-				}
 				region = line[regionColumnIndex];
-				var value = line[columnIndex];
-				var previousLine = previousLines[region];
-				if (delta && previousLine) {
-					value -= previousLine[columnIndex];
+				var date = line[dateColumnIndex];
+				if (!from || date >= from) {
+					if (date !== previousDate) {
+						labels.push(createDateLabel(line[dateColumnIndex]));
+						previousDate = date;
+					}
+					var value = line[columnIndex];
+					var previousLine = previousLines[region];
+					if (delta && previousLine) {
+						value -= previousLine[columnIndex];
+					}
+					if (per100k) {
+						value = Math.round(value / regionDescriptions[region].population * 100000);
+					}
+					var dataset = datasets[datasetIndexes[region]];
+					dataset.data.push(value);
 				}
-				if (per100k) {
-					value = Math.round(value / regionDescriptions[region].population * 100000);
-				}
-				var dataset = datasets[datasetIndexes[region]];
-				dataset.data.push(value);
 				previousLines[region] = line;
 			}
 			for (i = 0; i < datasetDefinitions.length && datasetDefinitions[i].column !== column; i++);
