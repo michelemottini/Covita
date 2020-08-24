@@ -319,7 +319,7 @@ $(function () {
 
 			var columns = result[0];
 			var dateColumnIndex = columnIndexThrows(columns, dateColumn);
-			var tamponiColumnIndex = columnIndexThrows(columns, tamponiColumn);
+			var tamponiColumnIndex = columnIndex(columns, tamponiColumn);
 			var filterColumnIndex = null;
 			var onlyTotal = false;
 			if (filter) {
